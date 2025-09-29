@@ -1,0 +1,47 @@
+{
+    "name": "minisnackbar",
+    "version": "1.0.0",
+    "description": "A simple vanilla JavaScript snackbar/toast library",
+    "main": "dist/minisnackbar.js",
+    "module": "dist/minisnackbar.esm.js",
+    "types": "index.d.ts",
+    "files": [
+        "dist",
+        "index.d.ts"
+    ],
+    "scripts": {
+        "build": "rollup -c",
+        "test": "jest",
+        "lint": "eslint index.js",
+        "format": "prettier --write index.js"
+    },
+    "keywords": [
+        "snackbar",
+        "toast",
+        "notification",
+        "vanilla-js"
+    ],
+    "author": "Your Name <your.email@example.com>",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/yourusername/minisnackbar.git"
+    },
+    "bugs": {
+        "url": "https://github.com/yourusername/minisnackbar/issues"
+    },
+    "homepage": "https://github.com/yourusername/minisnackbar#readme",
+    "jest": {
+        "testEnvironment": "jsdom"
+    },
+    "devDependencies": {
+        "@rollup/plugin-node-resolve": "^16.0.1",
+        "@rollup/plugin-terser": "^0.4.4",
+        "eslint": "^9.36.0",
+        "jest": "^30.2.0",
+        "jest-environment-jsdom": "^30.2.0",
+        "jsdom": "^27.0.0",
+        "prettier": "^3.6.2",
+        "rollup": "^4.52.3"
+    }
+}

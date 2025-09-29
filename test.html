@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MiniSnackbar Test</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+
+        button {
+            background: #1976d2;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        button:hover {
+            background: #1565c0;
+        }
+
+        .info {
+            background: #e3f2fd;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>MiniSnackbar Test Page</h1>
+
+    <div class="test-section">
+        <h2>Basic Tests (Queue Mode - Snackbar.add)</h2>
+        <div class="info">
+            These tests use <code>Snackbar.add()</code> which queues messages. If you click multiple times quickly,
+            messages will show one after another.
+        </div>
+        <button onclick="testBasic()">Basic Message</button>
+        <button onclick="testWithAction()">Message with Action</button>
+        <button onclick="testCustomDuration()">Custom Duration (5s)</button>
+        <button onclick="testMultiple()">Multiple Messages</button>
+    </div>
+
+    <div class="test-section">
+        <h2>Show Method Tests (Immediate Mode - Snackbar.show)</h2>
+        <div class="info">
+            These tests use <code>Snackbar.show()</code> which shows messages immediately. If you click multiple times
+            quickly, each new message will interrupt and replace the previous one.
+        </div>
+        <button onclick="testShowBasic()">Basic Show Message</button>
+        <button onclick="testShowWithAction()">Show with Action</button>
+        <button onclick="testShowInterrupt()">Show Interrupt Test</button>
+        <button onclick="testAddVsShow()">Add vs Show Comparison</button>
+    </div>
+
+    <div class="test-section">
+        <h2>Input Validation Tests</h2>
+        <div class="info">
+            These tests check input validation. Invalid inputs should show console warnings and not display messages.
+        </div>
+        <button onclick="testInvalidMessage()">Invalid Message (empty)</button>
+        <button onclick="testInvalidAction()">Invalid Action</button>
+        <button onclick="testInvalidDuration()">Invalid Duration</button>
+        <button onclick="testValidInputs()">Valid Inputs</button>
+    </div>
+
+    <div class="test-section">
+        <h2>State Management Tests</h2>
+        <div class="info">
+            Test the new state management methods: <code>clearQueue()</code> and <code>hideCurrent()</code>.
+        </div>
+        <button onclick="testClearQueue()">Clear Queue</button>
+        <button onclick="testHideCurrent()">Hide Current</button>
+        <button onclick="testQueueAndClear()">Queue Messages & Clear</button>
+    </div>
+
+    <div class="test-section">
+        <h2>Theming Tests</h2>
+        <div class="info">
+            Test CSS custom properties for theming. Click to apply different themes.
+        </div>
+        <button onclick="applyLightTheme()">Light Theme</button>
+        <button onclick="applyDarkTheme()">Dark Theme</button>
+        <button onclick="applyCustomTheme()">Custom Theme</button>
+        <button onclick="resetTheme()">Reset Theme</button>
+    </div>
+
+    <div class="test-section">
+        <h2>Material Design Components Test</h2>
+        <div class="info">
+            <strong>Current Status:</strong> <span id="md-status">Checking...</span><br>
+            If Material Design components are loaded, action buttons will use <code>md-text-button</code>.<br>
+            Otherwise, they'll fall back to standard <code><button></code> elements.
+        </div>
+        <button onclick="checkMDStatus()">Check MD Status</button>
+        <button onclick="loadMDComponents()">Load MD Components</button>
+        <button onclick="testAfterMDLoad()">Test After MD Load</button>
+    </div>
+
+    <div class="test-section">
+        <h2>Test Results</h2>
+        <div id="results"></div>
+    </div>
+
+    <!-- MiniSnackbar script -->
+    <script src="dist/minisnackbar.js"></script>
+
+    <script>
+        // Initialize Snackbar on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            Snackbar.init();
+        });
+        // Test functions
+        function testBasic() {
+            Snackbar.add('This is a basic message!');
+            logResult('Basic message displayed');
+        }
+
+        function testWithAction() {
+            Snackbar.add('Item deleted successfully', {
+                text: 'UNDO',
+                handler: () => {
+                    logResult('Undo action clicked!');
+                }
+            });
+            logResult('Message with action displayed');
+        }
+
+        function testCustomDuration() {
+            Snackbar.add('This message will show for 5 seconds', null, 5000);
+            logResult('Custom duration message displayed (5 seconds)');
+        }
+
+        function testMultiple() {
+            Snackbar.add('First message');
+            Snackbar.add('Second message');
+            Snackbar.add('Third message');
+            logResult('Multiple messages queued');
+        }
+
+        function checkMDStatus() {
+            const isAvailable = customElements.get('md-text-button') !== undefined;
+            document.getElementById('md-status').textContent =
+                isAvailable ? 'Material Design components loaded' : 'Using fallback buttons';
+            logResult(`MD Status: ${isAvailable ? 'Available' : 'Not available'}`);
+        }
+
+        function loadMDComponents() {
+            if (customElements.get('md-text-button')) {
+                logResult('Material Design components already loaded');
+                return;
+            }
+
+            // Load Material Design web components (for testing)
+            const script = document.createElement('script');
+            script.src = 'https://unpkg.com/material-web@1.0.0/dist/index.js';
+            script.onload = () => {
+                logResult('Material Design components loaded successfully');
+                checkMDStatus();
+            };
+            script.onerror = () => {
+                logResult('Failed to load Material Design components');
+            };
+            document.head.appendChild(script);
+        }
+
+        function testAfterMDLoad() {
+            testWithAction();
+            setTimeout(() => {
+                checkMDStatus();
+            }, 100);
+        }
+
+        // Show method test functions
+        function testShowBasic() {
+            Snackbar.show('This is a show message!');
+            logResult('Show message displayed immediately');
+        }
+
+        function testShowWithAction() {
+            Snackbar.show('Item deleted (show method)', {
+                text: 'UNDO',
+                handler: () => {
+                    logResult('Show undo action clicked!');
+                }
+            });
+            logResult('Show message with action displayed');
+        }
+
+        function testShowInterrupt() {
+            Snackbar.show('First show message', null, 3000);
+            setTimeout(() => {
+                Snackbar.show('Second show message - interrupted the first!', null, 2000);
+                logResult('Second show interrupted the first');
+            }, 500);
+        }
+
+        function testAddVsShow() {
+            // Add multiple messages quickly - they should queue
+            Snackbar.add('Add 1');
+            Snackbar.add('Add 2');
+            Snackbar.add('Add 3');
+            logResult('Added 3 messages to queue');
+
+            // Wait a bit, then show messages that should interrupt
+            setTimeout(() => {
+                Snackbar.show('Show 1 - interrupts queue');
+                setTimeout(() => {
+                    Snackbar.show('Show 2 - interrupts previous show');
+                    logResult('Show messages interrupted the queue');
+                }, 300);
+            }, 1000);
+        }
+
+        // Input validation test functions
+        function testInvalidMessage() {
+            Snackbar.add(''); // Empty message
+            Snackbar.add(null); // Null message
+            Snackbar.add(undefined); // Undefined message
+            logResult('Invalid message tests completed (check console for warnings)');
+        }
+
+        function testInvalidAction() {
+            Snackbar.add('Valid message', {}); // Missing text and handler
+            Snackbar.add('Valid message', { text: 'OK' }); // Missing handler
+            Snackbar.add('Valid message', { handler: () => { } }); // Missing text
+            Snackbar.add('Valid message', { text: 123, handler: 'not a function' }); // Invalid types
+            logResult('Invalid action tests completed (check console for warnings)');
+        }
+
+        function testInvalidDuration() {
+            Snackbar.add('Valid message', null, 'not a number'); // String duration
+            Snackbar.add('Valid message', null, -100); // Negative duration
+            Snackbar.add('Valid message', null, 0); // Zero duration
+            logResult('Invalid duration tests completed (check console for warnings)');
+        }
+
+        function testValidInputs() {
+            Snackbar.add('Valid message');
+            Snackbar.add('Valid with action', { text: 'OK', handler: () => logResult('Valid action clicked') });
+            Snackbar.add('Valid with duration', null, 2000);
+            logResult('Valid inputs tests completed');
+        }
+
+        // State management test functions
+        function testClearQueue() {
+            Snackbar.add('Message 1');
+            Snackbar.add('Message 2');
+            Snackbar.add('Message 3');
+            logResult('Added 3 messages to queue');
+
+            setTimeout(() => {
+                Snackbar.clearQueue();
+                logResult('Queue cleared');
+            }, 100);
+        }
+
+        function testHideCurrent() {
+            Snackbar.show('This message will be hidden', null, 5000);
+            logResult('Showed message for 5 seconds');
+
+            setTimeout(() => {
+                Snackbar.hideCurrent();
+                logResult('Current message hidden manually');
+            }, 1000);
+        }
+
+        function testQueueAndClear() {
+            Snackbar.add('Will be cleared 1');
+            Snackbar.add('Will be cleared 2');
+            Snackbar.add('Will be cleared 3');
+            logResult('Queued 3 messages');
+
+            setTimeout(() => {
+                Snackbar.clearQueue();
+                logResult('All queued messages cleared');
+            }, 500);
+        }
+
+        // Theming test functions
+        function applyLightTheme() {
+            document.documentElement.style.setProperty('--mini-snackbar-bg', '#ffffff');
+            document.documentElement.style.setProperty('--mini-snackbar-text', '#000000');
+            document.documentElement.style.setProperty('--mini-snackbar-border', '1px solid #e0e0e0');
+            document.documentElement.style.setProperty('--mini-snackbar-radius', '8px');
+            Snackbar.show('Light theme applied!', null, 2000);
+            logResult('Light theme applied');
+        }
+
+        function applyDarkTheme() {
+            document.documentElement.style.setProperty('--mini-snackbar-bg', '#333333');
+            document.documentElement.style.setProperty('--mini-snackbar-text', '#ffffff');
+            document.documentElement.style.setProperty('--mini-snackbar-border', '1px solid #555555');
+            document.documentElement.style.setProperty('--mini-snackbar-radius', '12px');
+            Snackbar.show('Dark theme applied!', null, 2000);
+            logResult('Dark theme applied');
+        }
+
+        function applyCustomTheme() {
+            document.documentElement.style.setProperty('--mini-snackbar-bg', 'linear-gradient(45deg, #ff6b6b, #4ecdc4)');
+            document.documentElement.style.setProperty('--mini-snackbar-text', '#ffffff');
+            document.documentElement.style.setProperty('--mini-snackbar-border', '2px solid #ff4757');
+            document.documentElement.style.setProperty('--mini-snackbar-radius', '20px');
+            document.documentElement.style.setProperty('--mini-snackbar-shadow', '0 8px 32px rgba(0,0,0,0.3)');
+            Snackbar.show('Custom gradient theme!', null, 3000);
+            logResult('Custom gradient theme applied');
+        }
+
+        function resetTheme() {
+            // Reset to defaults
+            document.documentElement.style.removeProperty('--mini-snackbar-bg');
+            document.documentElement.style.removeProperty('--mini-snackbar-text');
+            document.documentElement.style.removeProperty('--mini-snackbar-border');
+            document.documentElement.style.removeProperty('--mini-snackbar-radius');
+            document.documentElement.style.removeProperty('--mini-snackbar-shadow');
+            Snackbar.show('Theme reset to defaults', null, 2000);
+            logResult('Theme reset to defaults');
+        }
+
+        function logResult(message) {
+            const results = document.getElementById('results');
+            const timestamp = new Date().toLocaleTimeString();
+            results.innerHTML = `<div>${timestamp}: ${message}</div>` + results.innerHTML;
+        }
+
+        // Check initial status on load
+        window.addEventListener('load', () => {
+            checkMDStatus();
+        });
+    </script>
+</body>
+
+</html>
