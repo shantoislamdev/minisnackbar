@@ -6,9 +6,9 @@ MiniSnackbar is a lightweight, zero-dependency vanilla JavaScript library for di
 
 **Key Feature:** MiniSnackbar automatically integrates with [Material Web](https://material-web.dev/) components and matches your site's default Material theme. Since Material Web doesn't provide a snackbar component, this library fills that gap while maintaining design consistency.
 
-**Author:** Shanto Islam ([shantoislamdev.web.app](https://shantoislamdev.web.app)) <shantoislamdev@gmail.com>  
-**Version:** 1.0.0  
-**License:** MIT  
+**Author:** Shanto Islam ([shantoislamdev.web.app](https://shantoislamdev.web.app)) <shantoislamdev@gmail.com>
+**Version:** 1.0.1
+**License:** MIT
 **Repository:** [github.com/shantoislamdev/minisnackbar](https://github.com/shantoislamdev/minisnackbar)
 
 ## Table of Contents
@@ -49,8 +49,10 @@ npm install minisnackbar
 ### CDN
 
 ```html
-<script src="https://unpkg.com/minisnackbar@1.0.0/dist/minisnackbar.js"></script>
+<script src="https://unpkg.com/minisnackbar/dist/minisnackbar.js"></script>
 ```
+
+> **Note:** Omitting the version number will always load the latest version. For production stability, consider pinning to a specific version (e.g., `@1.0.1`).
 
 ### Manual Download
 
