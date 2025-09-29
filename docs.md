@@ -329,7 +329,16 @@ For more advanced customization, override the default CSS classes:
 MiniSnackbar automatically detects and integrates with Material Design web components:
 
 ```html
-<script src="https://unpkg.com/material-web@1.0.0/dist/material-web.js"></script>
+<script type="importmap">
+    {
+      "imports": {
+        "@material/web/": "https://esm.run/@material/web/"
+      }
+    }
+  </script>
+  <script type="module">
+    import '@material/web/all.js';
+  </script>
 <script src="dist/minisnackbar.js"></script>
 <script>
   Snackbar.init();
