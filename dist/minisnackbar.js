@@ -68,7 +68,7 @@
           
           /* Theming */
           background-color: var(--mini-snackbar-bg, var(--md-sys-color-inverse-surface, rgba(255, 255, 255, 1)));
-          color: var(--mini-snackbar-text, var(--md-sys-color-inverse-on-surface, inherit));
+          color: var(--mini-snackbar-text, var(--md-sys-color-inverse-on-surface, rgba(27, 27, 27, 1)));
           border: var(--mini-snackbar-border, none);
           font-family: var(--mini-snackbar-font-family, inherit);
           font-size: 0.875rem;

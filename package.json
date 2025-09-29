@@ -1,6 +1,6 @@
 {
     "name": "minisnackbar",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "type": "module",
     "description": "A simple vanilla JavaScript snackbar/toast library",
     "main": "dist/minisnackbar.js",
