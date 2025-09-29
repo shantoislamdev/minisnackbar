@@ -6,6 +6,13 @@
     "main": "dist/minisnackbar.js",
     "module": "dist/minisnackbar.esm.js",
     "types": "src/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./src/index.d.ts",
+            "import": "./dist/minisnackbar.esm.js",
+            "require": "./dist/minisnackbar.js"
+        }
+    },
     "files": [
         "dist",
         "src/index.d.ts"
@@ -26,7 +33,7 @@
     "license": "MIT",
     "repository": {
         "type": "git",
-        "url": "https://github.com/shantoislamdev/minisnackbar.git"
+        "url": "git+https://github.com/shantoislamdev/minisnackbar.git"
     },
     "bugs": {
         "url": "https://github.com/shantoislamdev/minisnackbar/issues"
