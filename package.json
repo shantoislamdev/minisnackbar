@@ -1,19 +1,20 @@
 {
     "name": "minisnackbar",
     "version": "1.0.0",
+    "type": "module",
     "description": "A simple vanilla JavaScript snackbar/toast library",
     "main": "dist/minisnackbar.js",
     "module": "dist/minisnackbar.esm.js",
-    "types": "index.d.ts",
+    "types": "src/index.d.ts",
     "files": [
         "dist",
-        "index.d.ts"
+        "src/index.d.ts"
     ],
     "scripts": {
         "build": "rollup -c",
         "test": "jest",
-        "lint": "eslint index.js",
-        "format": "prettier --write index.js"
+        "lint": "eslint src/index.js",
+        "format": "prettier --write src/index.js"
     },
     "keywords": [
         "snackbar",
@@ -21,16 +22,16 @@
         "notification",
         "vanilla-js"
     ],
-    "author": "Your Name <your.email@example.com>",
+    "author": "Shanto Islam <shantoislamdev@gmail.com>",
     "license": "MIT",
     "repository": {
         "type": "git",
-        "url": "https://github.com/yourusername/minisnackbar.git"
+        "url": "https://github.com/shantoislamdev/minisnackbar.git"
     },
     "bugs": {
-        "url": "https://github.com/yourusername/minisnackbar/issues"
+        "url": "https://github.com/shantoislamdev/minisnackbar/issues"
     },
-    "homepage": "https://github.com/yourusername/minisnackbar#readme",
+    "homepage": "https://github.com/shantoislamdev/minisnackbar#readme",
     "jest": {
         "testEnvironment": "jsdom"
     },

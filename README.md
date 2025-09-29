@@ -1,15 +1,19 @@
 # MiniSnackbar
 
-A simple, lightweight vanilla JavaScript snackbar/toast library with no dependencies.
+A simple, lightweight vanilla JavaScript snackbar/toast library with no dependencies. **Automatically integrates with [Material Web](https://material-web.dev/) components and matches your site's default Material theme.** Since Material Web doesn't provide a snackbar component, this library fills that gap while maintaining design consistency.
+
+**Author:** Shanto Islam ([shantoislamdev.web.app](https://shantoislamdev.web.app)) <shantoislamdev@gmail.com>  
+**License:** MIT  
+**Repository:** [github.com/shantoislamdev/minisnackbar](https://github.com/shantoislamdev/minisnackbar)
 
 ## Features
 
-- 🚀 Zero dependencies (works with or without Material Design web components)
-- 🎨 Customizable styling
+- 🚀 Zero dependencies (works with or without Material Web components)
+- 🎨 Customizable styling with automatic Material theme integration
 - 📱 Mobile responsive
 - ⚡ Lightweight (~2KB minified)
 - 🔄 Queue management for multiple messages
-- 🎯 Action buttons support (uses Material Design buttons when available, falls back to styled md-text-button elements with data attributes)
+- 🎯 Action buttons support (uses Material Web buttons when available, falls back to styled md-text-button elements with data attributes)
 - 📦 UMD, ESM, and CommonJS support
 
 ## Installation
@@ -20,11 +24,23 @@ npm install minisnackbar
 
 ## Usage
 
-### Basic Usage
+### Initialization
+
+Initialize the snackbar before use. You can optionally configure the transition duration:
 
 ```javascript
 import Snackbar from 'minisnackbar';
 
+// Basic initialization
+Snackbar.init();
+
+// With custom transition duration (default: 250ms)
+Snackbar.init({ transitionDuration: 500 });
+```
+
+### Basic Usage
+
+```javascript
 // Simple message
 Snackbar.add('Message sent successfully');
 ```
@@ -48,17 +64,43 @@ Snackbar.add('Item deleted', {
 Snackbar.add('Custom duration message', null, 5000);
 ```
 
+### Immediate Display
+
+Show a message immediately, interrupting any currently displayed snackbar:
+
+```javascript
+Snackbar.show('Important message');
+```
+
+### Cleanup
+
+When you're done using the snackbar, clean up resources:
+
+```javascript
+Snackbar.destroy();
+```
+
 ### Browser (Global)
 
 ```html
 <script src="dist/minisnackbar.js"></script>
 <script>
+  // Initialize first
+  Snackbar.init();
+
   // Available globally as Snackbar
   Snackbar.add('Hello World!');
 </script>
 ```
 
 ## API
+
+### `Snackbar.init(options?)`
+
+Initializes the snackbar library. Must be called before using other methods.
+
+- `options` (object, optional): Configuration options
+  - `transitionDuration` (number, optional): Transition duration in milliseconds (default: 250)
 
 ### `Snackbar.add(message, action?, duration?)`
 
@@ -79,6 +121,30 @@ Shows a snackbar message immediately, interrupting any currently displayed snack
   - `text` (string): Button text
   - `handler` (function): Click handler function
 - `duration` (number, optional): Display duration in milliseconds (default: 3000)
+
+### `Snackbar.destroy()`
+
+Cleans up the snackbar instance, removing DOM elements and resetting state.
+
+### `Snackbar.clearQueue()`
+
+Clears all queued snackbar messages.
+
+### `Snackbar.hideCurrent()`
+
+Hides the currently displayed snackbar (if any).
+
+### `Snackbar.isInitialized()`
+
+Returns whether the snackbar has been initialized.
+
+- **Returns:** (boolean) Initialization status
+
+### `Snackbar.getTransitionDuration()`
+
+Gets the current transition duration in milliseconds.
+
+- **Returns:** (number) Transition duration
 
 ## Styling
 

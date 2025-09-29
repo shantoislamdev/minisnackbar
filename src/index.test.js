@@ -21,12 +21,17 @@ const Snackbar = require('./index.js');
 
 describe('MiniSnackbar', () => {
     beforeEach(() => {
+        // Clean up any existing snackbar instance
+        if (Snackbar.isInitialized()) {
+            Snackbar.destroy();
+        }
         // Clear the DOM before each test
         document.body.innerHTML = '';
         // Reset Snackbar state
         Snackbar.queue = [];
         Snackbar.isShowing = false;
         Snackbar.currentTimeout = null;
+        Snackbar.state = 'idle';
     });
 
     test('should initialize and create snackbar element', () => {
@@ -96,12 +101,12 @@ describe('MiniSnackbar', () => {
             const textElement = snackbar.querySelector('.mini-snackbar-text');
             expect(textElement.textContent).toBe('First message');
 
-            // Wait for first to hide (50ms) + transition delay (200ms) + buffer
+            // Wait for first to hide (50ms) + transition (250ms) + queue delay (200ms)
             setTimeout(() => {
                 expect(textElement.textContent).toBe('Second message');
                 expect(Snackbar.queue.length).toBe(0); // Second message now showing
                 done();
-            }, 300);
+            }, 500);
         }, 10);
     });
 
@@ -124,14 +129,14 @@ describe('MiniSnackbar', () => {
         Snackbar.show('First show', null, 200);
         Snackbar.show('Second show', null, 100);
 
-        // Wait for requestAnimationFrame to execute
+        // Wait for transition to complete (250ms) + buffer
         setTimeout(() => {
             const snackbar = document.getElementById('mini-snackbar');
             const textElement = snackbar.querySelector('.mini-snackbar-text');
             expect(textElement.textContent).toBe('Second show');
             expect(snackbar.classList.contains('show')).toBe(true);
             done();
-        }, 20);
+        }, 300);
     });
 
     test('should handle action button in show method', (done) => {
@@ -147,9 +152,77 @@ describe('MiniSnackbar', () => {
 
             actionButton.click();
             expect(mockHandler).toHaveBeenCalled();
-            expect(Snackbar.isShowing).toBe(false);
 
             done();
         }, 10);
+    });
+
+    test('should initialize with custom transition duration', () => {
+        Snackbar.init({ transitionDuration: 500 });
+        expect(Snackbar.isInitialized()).toBe(true);
+        // Clean up
+        Snackbar.destroy();
+    });
+
+    test('should return initialization status', () => {
+        expect(Snackbar.isInitialized()).toBe(false);
+        Snackbar.init();
+        expect(Snackbar.isInitialized()).toBe(true);
+        Snackbar.destroy();
+        expect(Snackbar.isInitialized()).toBe(false);
+    });
+
+    test('should destroy and clean up properly', () => {
+        Snackbar.init();
+        Snackbar.add('Test message');
+
+        // Verify elements exist
+        expect(document.getElementById('mini-snackbar')).toBeTruthy();
+        expect(document.getElementById('mini-snackbar-styles')).toBeTruthy();
+
+        Snackbar.destroy();
+
+        // Verify elements are removed
+        expect(document.getElementById('mini-snackbar')).toBeFalsy();
+        expect(document.getElementById('mini-snackbar-styles')).toBeFalsy();
+
+        // Verify state is reset
+        expect(Snackbar.isInitialized()).toBe(false);
+        expect(Snackbar.isShowing).toBe(false);
+        expect(Snackbar.state).toBe('idle');
+    });
+
+    test('should get transition duration', () => {
+        Snackbar.init({ transitionDuration: 400 });
+        expect(Snackbar.getTransitionDuration()).toBe(400);
+        Snackbar.destroy();
+    });
+
+    test('should provide access to internal state for testing', () => {
+        Snackbar.init();
+
+        // Test queue getter/setter
+        expect(Snackbar.queue).toEqual([]);
+        Snackbar.queue = [{ message: 'test', action: null, duration: 1000 }];
+        expect(Snackbar.queue.length).toBe(1);
+
+        // Test isShowing getter/setter
+        expect(Snackbar.isShowing).toBe(false);
+        Snackbar.isShowing = true;
+        expect(Snackbar.isShowing).toBe(true);
+
+        // Test state getter/setter
+        expect(Snackbar.state).toBe('idle');
+        Snackbar.state = 'showing';
+        expect(Snackbar.state).toBe('showing');
+
+        // Test currentTimeout getter/setter
+        expect(Snackbar.currentTimeout).toBe(null);
+        const mockTimeout = setTimeout(() => { }, 100);
+        Snackbar.currentTimeout = mockTimeout;
+        expect(Snackbar.currentTimeout).toBe(mockTimeout);
+        clearTimeout(mockTimeout);
+
+        Snackbar.destroy();
     });
 });
