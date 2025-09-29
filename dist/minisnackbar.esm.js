@@ -1,3 +1,14 @@
+/**
+ * MiniSnackbar - A simple vanilla JavaScript snackbar/toast library
+ *
+ * @version 1.0.0
+ * @author Shanto Islam <shantoislamdev@gmail.com>
+ * @license MIT
+ * @description A lightweight, zero-dependency snackbar library with Material Design integration
+ * @repository https://github.com/shantoislamdev/minisnackbar
+ * @homepage https://github.com/shantoislamdev/minisnackbar#readme
+ */
+
 class Snackbar {
   static _queue = []
   static _isShowing = false
