@@ -1,6 +1,6 @@
 # MiniSnackbar
 
-A simple, lightweight vanilla JavaScript snackbar/toast library with no dependencies. Works standalone or seamlessly blends with Material Web components, adapting to your site's theme when available. Since Material Web doesn't provide a snackbar component, this library fills that gap.
+A simple, lightweight vanilla JavaScript snackbar/toast library with no dependencies. Works standalone or seamlessly blends with [Material Web](https://material-web.dev/) components, adapting to your site's theme when available. Since Material Web doesn't provide a snackbar component, this library fills that gap.
 
 **Author:** Shanto Islam ([shantoislamdev.web.app](https://shantoislamdev.web.app)) <shantoislamdev@gmail.com>  
 **License:** MIT  
