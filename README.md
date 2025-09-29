@@ -24,6 +24,13 @@ Snackbar.init();
 Snackbar.add('Hello, world!');
 ```
 
+## Browser Support
+
+- Chrome 60+
+- Firefox 55+
+- Safari 12+
+- Edge 79+
+
 ## Documentation
 
 For full documentation, API reference, and advanced usage, see [docs.md](docs.md).
