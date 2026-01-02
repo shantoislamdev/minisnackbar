@@ -1,44 +1,33 @@
 /**
  * MiniSnackbar - A simple vanilla JavaScript snackbar/toast library
  *
- * @version 1.0.0
+ * @version 2.0.0
  * @author Shanto Islam <shantoislamdev@gmail.com>
  * @license MIT
  * @description A lightweight, zero-dependency snackbar library with Material Design integration
  * @repository https://github.com/shantoislamdev/minisnackbar
  * @homepage https://github.com/shantoislamdev/minisnackbar#readme
  */
-
+// Snackbar class
 class Snackbar {
-  static _queue = []
-  static _isShowing = false
-  static _currentTimeout = null
-  static _state = 'idle' // idle, showing, transitioning
-  static _currentActionHandler = null
-  static _transitionDuration = 250
-  static _initialized = false
-
-  static init(options = {}) {
-    if (this._initialized) return
-
-    if (typeof document === 'undefined' || !document.body) {
-      console.error('Snackbar: DOM is not available');
-      return
-    }
-
-    if (options.transitionDuration && typeof options.transitionDuration === 'number') {
-      this._transitionDuration = options.transitionDuration;
-    }
-
-    if (document.getElementById('mini-snackbar')) {
-      this._initialized = true;
-      return
-    }
-
-    if (!document.getElementById('mini-snackbar-styles')) {
-      const style = document.createElement('style');
-      style.id = 'mini-snackbar-styles';
-      style.textContent = `
+    static init(options = {}) {
+        if (this._initialized)
+            return;
+        if (typeof document === 'undefined' || !document.body) {
+            console.error('Snackbar: DOM is not available');
+            return;
+        }
+        if (options.transitionDuration && typeof options.transitionDuration === 'number') {
+            this._transitionDuration = options.transitionDuration;
+        }
+        if (document.getElementById('mini-snackbar')) {
+            this._initialized = true;
+            return;
+        }
+        if (!document.getElementById('mini-snackbar-styles')) {
+            const style = document.createElement('style');
+            style.id = 'mini-snackbar-styles';
+            style.textContent = `
         .mini-snackbar {
           /* Positioning */
           position: fixed;
@@ -133,250 +122,249 @@ class Snackbar {
           }
         }
       `;
-      document.head.appendChild(style);
+            document.head.appendChild(style);
+        }
+        const snackbar = document.createElement('div');
+        snackbar.id = 'mini-snackbar';
+        snackbar.className = 'mini-snackbar';
+        snackbar.setAttribute('role', 'alert');
+        snackbar.setAttribute('aria-live', 'assertive');
+        snackbar.setAttribute('aria-atomic', 'true');
+        const snackbarText = document.createElement('span');
+        snackbarText.className = 'mini-snackbar-text';
+        snackbar.appendChild(snackbarText);
+        document.body.appendChild(snackbar);
+        this._initialized = true;
     }
-
-    const snackbar = document.createElement('div');
-    snackbar.id = 'mini-snackbar';
-    snackbar.className = 'mini-snackbar';
-    snackbar.setAttribute('role', 'alert');
-    snackbar.setAttribute('aria-live', 'assertive');
-    snackbar.setAttribute('aria-atomic', 'true');
-
-    const snackbarText = document.createElement('span');
-    snackbarText.className = 'mini-snackbar-text';
-    snackbar.appendChild(snackbarText);
-
-    document.body.appendChild(snackbar);
-    this._initialized = true;
-  }
-
-  static destroy() {
-    this.hideCurrent();
-    this.clearQueue();
-
-    const snackbar = document.getElementById('mini-snackbar');
-    if (snackbar) snackbar.remove();
-
-    const styles = document.getElementById('mini-snackbar-styles');
-    if (styles) styles.remove();
-
-    this._state = 'idle';
-    this._isShowing = false;
-    this._currentActionHandler = null;
-    this._currentTimeout = null;
-    this._initialized = false;
-  }
-
-  static getTransitionDuration() {
-    const snackbar = document.getElementById('mini-snackbar');
-    if (!snackbar) return this._transitionDuration
-
-    try {
-      const computedStyle = window.getComputedStyle(snackbar);
-      const duration = computedStyle.transitionDuration;
-      if (duration && duration !== '0s') {
-        const value = parseFloat(duration);
-        return duration.includes('ms') ? value : value * 1000
-      }
-    } catch (e) {
-      console.warn('Snackbar: Could not read transition duration from CSS', e);
-    }
-
-    return this._transitionDuration
-  }
-
-  static add(message, action = null, duration = 3000) {
-    if (!this._initialized) {
-      console.warn('Snackbar: Not initialized. Call Snackbar.init() first.');
-      return
-    }
-
-    if (typeof message !== 'string' || message.trim() === '') {
-      console.warn('Snackbar: Message must be a non-empty string');
-      return
-    }
-    if (action !== null && (typeof action !== 'object' || typeof action.text !== 'string' || typeof action.handler !== 'function')) {
-      console.warn('Snackbar: Action must be an object with "text" (string) and "handler" (function) properties');
-      return
-    }
-    if (typeof duration !== 'number' || duration <= 0) {
-      console.warn('Snackbar: Duration must be a positive number');
-      return
-    }
-
-    this._queue.push({ message, action, duration });
-    if (this._state === 'idle') this.showNext();
-  }
-
-  static _cleanupAction() {
-    const snackbar = document.getElementById('mini-snackbar');
-    if (!snackbar) return
-
-    const actionButton = snackbar.querySelector('.mini-snackbar-action');
-    if (actionButton && this._currentActionHandler) {
-      actionButton.removeEventListener('click', this._currentActionHandler);
-      this._currentActionHandler = null;
-      actionButton.remove();
-    }
-  }
-
-  static _showSnackbar(message, action, duration, onHide = null) {
-    const snackbar = document.getElementById('mini-snackbar');
-    if (!snackbar) {
-      console.error('Snackbar: Snackbar element not found. Ensure init() has been called.');
-      return
-    }
-
-    this._state = 'showing';
-    this._isShowing = true;
-    const snackbarText = snackbar.querySelector('.mini-snackbar-text');
-    snackbarText.textContent = message;
-
-    if (action) {
-      const actionButton = document.createElement('md-text-button');
-      actionButton.classList.add('mini-snackbar-action');
-
-      // Fallback for when Material Components are not available
-      if (customElements.get('md-text-button') === undefined) {
-        actionButton.setAttribute('data-fallback', '');
-      }
-
-      actionButton.textContent = action.text;
-
-      this._currentActionHandler = () => {
-        action.handler();
-        this._hideSnackbar(onHide);
-      };
-
-      actionButton.addEventListener('click', this._currentActionHandler);
-      snackbar.appendChild(actionButton);
-    }
-
-    snackbar.classList.add('show');
-
-    this._currentTimeout = setTimeout(() => {
-      this._hideSnackbar(onHide);
-    }, duration);
-  }
-
-  static _hideSnackbar(onHide = null) {
-    if (this._currentTimeout) {
-      clearTimeout(this._currentTimeout);
-      this._currentTimeout = null;
-    }
-
-    this._state = 'transitioning';
-    const snackbar = document.getElementById('mini-snackbar');
-    if (snackbar) {
-      snackbar.classList.remove('show');
-    }
-
-    this._cleanupAction();
-
-    // Wait for CSS transition to complete
-    const transitionDuration = this.getTransitionDuration();
-    setTimeout(() => {
-      this._isShowing = false;
-      this._state = 'idle';
-      if (onHide) onHide();
-    }, transitionDuration);
-  }
-
-  static show(message, action = null, duration = 3000) {
-    if (!this._initialized) {
-      console.warn('Snackbar: Not initialized. Call Snackbar.init() first.');
-      return
-    }
-
-    if (typeof message !== 'string' || message.trim() === '') {
-      console.warn('Snackbar: Message must be a non-empty string');
-      return
-    }
-    if (action !== null && (typeof action !== 'object' || typeof action.text !== 'string' || typeof action.handler !== 'function')) {
-      console.warn('Snackbar: Action must be an object with "text" (string) and "handler" (function) properties');
-      return
-    }
-    if (typeof duration !== 'number' || duration <= 0) {
-      console.warn('Snackbar: Duration must be a positive number');
-      return
-    }
-
-    // Queue message if currently transitioning
-    if (this._state === 'transitioning') {
-      this.add(message, action, duration);
-      return
-    }
-
-    // Interrupt current snackbar if showing
-    if (this._isShowing) {
-      this._state = 'transitioning';
-      if (this._currentTimeout) {
-        clearTimeout(this._currentTimeout);
-        this._currentTimeout = null;
-      }
-      const snackbar = document.getElementById('mini-snackbar');
-      if (snackbar) {
-        snackbar.classList.remove('show');
-      }
-      this._cleanupAction();
-
-      const transitionDuration = this.getTransitionDuration();
-      setTimeout(() => {
-        this._isShowing = false;
+    static destroy() {
+        this.hideCurrent();
+        this.clearQueue();
+        const snackbar = document.getElementById('mini-snackbar');
+        if (snackbar)
+            snackbar.remove();
+        const styles = document.getElementById('mini-snackbar-styles');
+        if (styles)
+            styles.remove();
         this._state = 'idle';
-        this._showSnackbar(message, action, duration);
-      }, transitionDuration);
-    } else {
-      this._showSnackbar(message, action, duration);
+        this._isShowing = false;
+        this._currentActionHandler = null;
+        this._currentTimeout = null;
+        this._initialized = false;
     }
-  }
-
-  static showNext() {
-    if (this._queue.length === 0) {
-      this._isShowing = false;
-      this._state = 'idle';
-      return
+    static getTransitionDuration() {
+        const snackbar = document.getElementById('mini-snackbar');
+        if (!snackbar)
+            return this._transitionDuration;
+        try {
+            const computedStyle = window.getComputedStyle(snackbar);
+            const duration = computedStyle.transitionDuration;
+            if (duration && duration !== '0s') {
+                const value = parseFloat(duration);
+                return duration.includes('ms') ? value : value * 1000;
+            }
+        }
+        catch (e) {
+            console.warn('Snackbar: Could not read transition duration from CSS', e);
+        }
+        return this._transitionDuration;
     }
-
-    const { message, action, duration } = this._queue.shift();
-    this._showSnackbar(message, action, duration, () => {
-      setTimeout(() => this.showNext(), 200);
-    });
-  }
-
-  static clearQueue() {
-    this._queue = [];
-  }
-
-  static hideCurrent() {
-    if (this._isShowing && this._state !== 'transitioning') {
-      this._hideSnackbar();
+    static add(message, action = null, duration = 3000) {
+        if (!this._initialized) {
+            console.warn('Snackbar: Not initialized. Call Snackbar.init() first.');
+            return;
+        }
+        if (typeof message !== 'string' || message.trim() === '') {
+            console.warn('Snackbar: Message must be a non-empty string');
+            return;
+        }
+        if (action !== null &&
+            (typeof action !== 'object' ||
+                typeof action.text !== 'string' ||
+                typeof action.handler !== 'function')) {
+            console.warn('Snackbar: Action must be an object with "text" (string) and "handler" (function) properties');
+            return;
+        }
+        if (typeof duration !== 'number' || duration <= 0) {
+            console.warn('Snackbar: Duration must be a positive number');
+            return;
+        }
+        this._queue.push({ message, action, duration });
+        if (this._state === 'idle')
+            this.showNext();
     }
-  }
-
-  static isInitialized() {
-    return this._initialized
-  }
-
-  // Getters/setters for testing
-  static get queue() { return this._queue }
-  static set queue(value) { this._queue = value; }
-  static get isShowing() { return this._isShowing }
-  static set isShowing(value) { this._isShowing = value; }
-  static get currentTimeout() { return this._currentTimeout }
-  static set currentTimeout(value) { this._currentTimeout = value; }
-  static get state() { return this._state }
-  static set state(value) { this._state = value; }
+    static _cleanupAction() {
+        const snackbar = document.getElementById('mini-snackbar');
+        if (!snackbar)
+            return;
+        const actionButton = snackbar.querySelector('.mini-snackbar-action');
+        if (actionButton && this._currentActionHandler) {
+            actionButton.removeEventListener('click', this._currentActionHandler);
+            this._currentActionHandler = null;
+            actionButton.remove();
+        }
+    }
+    static _showSnackbar(message, action, duration, onHide = null) {
+        const snackbar = document.getElementById('mini-snackbar');
+        if (!snackbar) {
+            console.error('Snackbar: Snackbar element not found. Ensure init() has been called.');
+            return;
+        }
+        this._state = 'showing';
+        this._isShowing = true;
+        const snackbarText = snackbar.querySelector('.mini-snackbar-text');
+        if (snackbarText) {
+            snackbarText.textContent = message;
+        }
+        if (action) {
+            const actionButton = document.createElement('md-text-button');
+            actionButton.classList.add('mini-snackbar-action');
+            // Fallback for when Material Components are not available
+            if (customElements.get('md-text-button') === undefined) {
+                actionButton.setAttribute('data-fallback', '');
+            }
+            actionButton.textContent = action.text;
+            this._currentActionHandler = () => {
+                action.handler();
+                this._hideSnackbar(onHide);
+            };
+            actionButton.addEventListener('click', this._currentActionHandler);
+            snackbar.appendChild(actionButton);
+        }
+        snackbar.classList.add('show');
+        this._currentTimeout = setTimeout(() => {
+            this._hideSnackbar(onHide);
+        }, duration);
+    }
+    static _hideSnackbar(onHide = null) {
+        if (this._currentTimeout) {
+            clearTimeout(this._currentTimeout);
+            this._currentTimeout = null;
+        }
+        this._state = 'transitioning';
+        const snackbar = document.getElementById('mini-snackbar');
+        if (snackbar) {
+            snackbar.classList.remove('show');
+        }
+        this._cleanupAction();
+        // Wait for CSS transition to complete
+        const transitionDuration = this.getTransitionDuration();
+        setTimeout(() => {
+            this._isShowing = false;
+            this._state = 'idle';
+            if (onHide)
+                onHide();
+        }, transitionDuration);
+    }
+    static show(message, action = null, duration = 3000) {
+        if (!this._initialized) {
+            console.warn('Snackbar: Not initialized. Call Snackbar.init() first.');
+            return;
+        }
+        if (typeof message !== 'string' || message.trim() === '') {
+            console.warn('Snackbar: Message must be a non-empty string');
+            return;
+        }
+        if (action !== null &&
+            (typeof action !== 'object' ||
+                typeof action.text !== 'string' ||
+                typeof action.handler !== 'function')) {
+            console.warn('Snackbar: Action must be an object with "text" (string) and "handler" (function) properties');
+            return;
+        }
+        if (typeof duration !== 'number' || duration <= 0) {
+            console.warn('Snackbar: Duration must be a positive number');
+            return;
+        }
+        // Queue message if currently transitioning
+        if (this._state === 'transitioning') {
+            this.add(message, action, duration);
+            return;
+        }
+        // Interrupt current snackbar if showing
+        if (this._isShowing) {
+            this._state = 'transitioning';
+            if (this._currentTimeout) {
+                clearTimeout(this._currentTimeout);
+                this._currentTimeout = null;
+            }
+            const snackbar = document.getElementById('mini-snackbar');
+            if (snackbar) {
+                snackbar.classList.remove('show');
+            }
+            this._cleanupAction();
+            const transitionDuration = this.getTransitionDuration();
+            setTimeout(() => {
+                this._isShowing = false;
+                this._state = 'idle';
+                this._showSnackbar(message, action, duration);
+            }, transitionDuration);
+        }
+        else {
+            this._showSnackbar(message, action, duration);
+        }
+    }
+    static showNext() {
+        if (this._queue.length === 0) {
+            this._isShowing = false;
+            this._state = 'idle';
+            return;
+        }
+        const item = this._queue.shift();
+        if (item) {
+            const { message, action, duration } = item;
+            this._showSnackbar(message, action, duration, () => {
+                setTimeout(() => this.showNext(), 200);
+            });
+        }
+    }
+    static clearQueue() {
+        this._queue = [];
+    }
+    static hideCurrent() {
+        if (this._isShowing && this._state !== 'transitioning') {
+            this._hideSnackbar();
+        }
+    }
+    static isInitialized() {
+        return this._initialized;
+    }
+    // Getters/setters for testing
+    static get queue() {
+        return this._queue;
+    }
+    static set queue(value) {
+        this._queue = value;
+    }
+    static get isShowing() {
+        return this._isShowing;
+    }
+    static set isShowing(value) {
+        this._isShowing = value;
+    }
+    static get currentTimeout() {
+        return this._currentTimeout;
+    }
+    static set currentTimeout(value) {
+        this._currentTimeout = value;
+    }
+    static get state() {
+        return this._state;
+    }
+    static set state(value) {
+        this._state = value;
+    }
 }
-
-// Module exports
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = Snackbar;
-}
-
-// Make available globally in browser
+Snackbar._queue = [];
+Snackbar._isShowing = false;
+Snackbar._currentTimeout = null;
+Snackbar._state = 'idle';
+Snackbar._currentActionHandler = null;
+Snackbar._transitionDuration = 250;
+Snackbar._initialized = false;
+// Make available globally in browser for UMD builds
 if (typeof window !== 'undefined') {
-  window.Snackbar = Snackbar;
+    window.Snackbar = Snackbar;
 }
+
+export { Snackbar, Snackbar as default };
 //# sourceMappingURL=minisnackbar.esm.js.map

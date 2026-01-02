@@ -378,4 +378,4 @@
     Object.defineProperty(exports, '__esModule', { value: true });
 
 }));
-//# sourceMappingURL=minisnackbar.js.map
+//# sourceMappingURL=minisnackbar.cjs.map
