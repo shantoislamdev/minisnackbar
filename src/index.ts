@@ -1,7 +1,7 @@
 /**
  * MiniSnackbar - A simple vanilla JavaScript snackbar/toast library
  *
- * @version 1.0.0
+ * @version 2.0.0
  * @author Shanto Islam <shantoislamdev@gmail.com>
  * @license MIT
  * @description A lightweight, zero-dependency snackbar library with Material Design integration
@@ -9,16 +9,35 @@
  * @homepage https://github.com/shantoislamdev/minisnackbar#readme
  */
 
-class Snackbar {
-  static _queue = []
-  static _isShowing = false
-  static _currentTimeout = null
-  static _state = 'idle' // idle, showing, transitioning
-  static _currentActionHandler = null
-  static _transitionDuration = 250
-  static _initialized = false
+// Type definitions
+export interface SnackbarAction {
+  text: string
+  handler: () => void
+}
 
-  static init(options = {}) {
+export interface SnackbarOptions {
+  transitionDuration?: number
+}
+
+export interface SnackbarItem {
+  message: string
+  action: SnackbarAction | null
+  duration: number
+}
+
+type SnackbarState = 'idle' | 'showing' | 'transitioning'
+
+// Snackbar class
+class Snackbar {
+  private static _queue: SnackbarItem[] = []
+  private static _isShowing: boolean = false
+  private static _currentTimeout: ReturnType<typeof setTimeout> | null = null
+  private static _state: SnackbarState = 'idle'
+  private static _currentActionHandler: (() => void) | null = null
+  private static _transitionDuration: number = 250
+  private static _initialized: boolean = false
+
+  static init(options: SnackbarOptions = {}): void {
     if (this._initialized) return
 
     if (typeof document === 'undefined' || !document.body) {
@@ -151,7 +170,7 @@ class Snackbar {
     this._initialized = true
   }
 
-  static destroy() {
+  static destroy(): void {
     this.hideCurrent()
     this.clearQueue()
 
@@ -168,7 +187,7 @@ class Snackbar {
     this._initialized = false
   }
 
-  static getTransitionDuration() {
+  static getTransitionDuration(): number {
     const snackbar = document.getElementById('mini-snackbar')
     if (!snackbar) return this._transitionDuration
 
@@ -186,7 +205,7 @@ class Snackbar {
     return this._transitionDuration
   }
 
-  static add(message, action = null, duration = 3000) {
+  static add(message: string, action: SnackbarAction | null = null, duration: number = 3000): void {
     if (!this._initialized) {
       console.warn('Snackbar: Not initialized. Call Snackbar.init() first.')
       return
@@ -196,8 +215,15 @@ class Snackbar {
       console.warn('Snackbar: Message must be a non-empty string')
       return
     }
-    if (action !== null && (typeof action !== 'object' || typeof action.text !== 'string' || typeof action.handler !== 'function')) {
-      console.warn('Snackbar: Action must be an object with "text" (string) and "handler" (function) properties')
+    if (
+      action !== null &&
+      (typeof action !== 'object' ||
+        typeof action.text !== 'string' ||
+        typeof action.handler !== 'function')
+    ) {
+      console.warn(
+        'Snackbar: Action must be an object with "text" (string) and "handler" (function) properties'
+      )
       return
     }
     if (typeof duration !== 'number' || duration <= 0) {
@@ -209,7 +235,7 @@ class Snackbar {
     if (this._state === 'idle') this.showNext()
   }
 
-  static _cleanupAction() {
+  private static _cleanupAction(): void {
     const snackbar = document.getElementById('mini-snackbar')
     if (!snackbar) return
 
@@ -221,7 +247,12 @@ class Snackbar {
     }
   }
 
-  static _showSnackbar(message, action, duration, onHide = null) {
+  private static _showSnackbar(
+    message: string,
+    action: SnackbarAction | null,
+    duration: number,
+    onHide: (() => void) | null = null
+  ): void {
     const snackbar = document.getElementById('mini-snackbar')
     if (!snackbar) {
       console.error('Snackbar: Snackbar element not found. Ensure init() has been called.')
@@ -231,7 +262,9 @@ class Snackbar {
     this._state = 'showing'
     this._isShowing = true
     const snackbarText = snackbar.querySelector('.mini-snackbar-text')
-    snackbarText.textContent = message
+    if (snackbarText) {
+      snackbarText.textContent = message
+    }
 
     if (action) {
       const actionButton = document.createElement('md-text-button')
@@ -244,7 +277,7 @@ class Snackbar {
 
       actionButton.textContent = action.text
 
-      this._currentActionHandler = () => {
+      this._currentActionHandler = (): void => {
         action.handler()
         this._hideSnackbar(onHide)
       }
@@ -260,7 +293,7 @@ class Snackbar {
     }, duration)
   }
 
-  static _hideSnackbar(onHide = null) {
+  private static _hideSnackbar(onHide: (() => void) | null = null): void {
     if (this._currentTimeout) {
       clearTimeout(this._currentTimeout)
       this._currentTimeout = null
@@ -283,7 +316,11 @@ class Snackbar {
     }, transitionDuration)
   }
 
-  static show(message, action = null, duration = 3000) {
+  static show(
+    message: string,
+    action: SnackbarAction | null = null,
+    duration: number = 3000
+  ): void {
     if (!this._initialized) {
       console.warn('Snackbar: Not initialized. Call Snackbar.init() first.')
       return
@@ -293,8 +330,15 @@ class Snackbar {
       console.warn('Snackbar: Message must be a non-empty string')
       return
     }
-    if (action !== null && (typeof action !== 'object' || typeof action.text !== 'string' || typeof action.handler !== 'function')) {
-      console.warn('Snackbar: Action must be an object with "text" (string) and "handler" (function) properties')
+    if (
+      action !== null &&
+      (typeof action !== 'object' ||
+        typeof action.text !== 'string' ||
+        typeof action.handler !== 'function')
+    ) {
+      console.warn(
+        'Snackbar: Action must be an object with "text" (string) and "handler" (function) properties'
+      )
       return
     }
     if (typeof duration !== 'number' || duration <= 0) {
@@ -332,51 +376,67 @@ class Snackbar {
     }
   }
 
-  static showNext() {
+  static showNext(): void {
     if (this._queue.length === 0) {
       this._isShowing = false
       this._state = 'idle'
       return
     }
 
-    const { message, action, duration } = this._queue.shift()
-    this._showSnackbar(message, action, duration, () => {
-      setTimeout(() => this.showNext(), 200)
-    })
+    const item = this._queue.shift()
+    if (item) {
+      const { message, action, duration } = item
+      this._showSnackbar(message, action, duration, () => {
+        setTimeout(() => this.showNext(), 200)
+      })
+    }
   }
 
-  static clearQueue() {
+  static clearQueue(): void {
     this._queue = []
   }
 
-  static hideCurrent() {
+  static hideCurrent(): void {
     if (this._isShowing && this._state !== 'transitioning') {
       this._hideSnackbar()
     }
   }
 
-  static isInitialized() {
+  static isInitialized(): boolean {
     return this._initialized
   }
 
   // Getters/setters for testing
-  static get queue() { return this._queue }
-  static set queue(value) { this._queue = value }
-  static get isShowing() { return this._isShowing }
-  static set isShowing(value) { this._isShowing = value }
-  static get currentTimeout() { return this._currentTimeout }
-  static set currentTimeout(value) { this._currentTimeout = value }
-  static get state() { return this._state }
-  static set state(value) { this._state = value }
+  static get queue(): SnackbarItem[] {
+    return this._queue
+  }
+  static set queue(value: SnackbarItem[]) {
+    this._queue = value
+  }
+  static get isShowing(): boolean {
+    return this._isShowing
+  }
+  static set isShowing(value: boolean) {
+    this._isShowing = value
+  }
+  static get currentTimeout(): ReturnType<typeof setTimeout> | null {
+    return this._currentTimeout
+  }
+  static set currentTimeout(value: ReturnType<typeof setTimeout> | null) {
+    this._currentTimeout = value
+  }
+  static get state(): SnackbarState {
+    return this._state
+  }
+  static set state(value: SnackbarState) {
+    this._state = value
+  }
 }
 
-// Module exports
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = Snackbar
-}
-
-// Make available globally in browser
+// Make available globally in browser for UMD builds
 if (typeof window !== 'undefined') {
-  window.Snackbar = Snackbar
+  ; (window as typeof window & { Snackbar: typeof Snackbar }).Snackbar = Snackbar
 }
 
+export default Snackbar
+export { Snackbar }
