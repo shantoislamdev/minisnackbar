@@ -27,7 +27,7 @@ Snackbar.add('Item deleted', {
 ## CDN
 
 ```html
-<script src="https://unpkg.com/minisnackbar@2.0.0/dist/minisnackbar.min.js"></script>
+<script src="https://unpkg.com/minisnackbar@3.0.0/dist/minisnackbar.min.js"></script>
 <script>
   Snackbar.init()
   Snackbar.add('Hello from MiniSnackbar')

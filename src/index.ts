@@ -1,7 +1,7 @@
 /**
  * MiniSnackbar - A simple vanilla JavaScript snackbar/toast library
  *
- * @version 2.0.0
+ * @version 3.0.0
  * @author Shanto Islam <shantoislamdev@gmail.com>
  * @license MIT
  * @description A lightweight, zero-dependency snackbar library with Material Design integration
