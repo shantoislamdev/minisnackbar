@@ -5,95 +5,147 @@ if (typeof TextEncoder === 'undefined') {
   global.TextDecoder = util.TextDecoder
 }
 
-// Jest environment jsdom provides window, document, navigator, etc.
-
-// Import the built Snackbar module (UMD/CommonJS)
 const { Snackbar } = require('../dist/minisnackbar.cjs')
 
+const getSnackbar = () => document.getElementById('mini-snackbar')
+const getText = () => getSnackbar().querySelector('.mini-snackbar-text').textContent
+
 describe('MiniSnackbar', () => {
+  let warnSpy
+  let errorSpy
+
   beforeEach(() => {
-    // Clean up any existing snackbar instance
-    if (Snackbar.isInitialized()) {
-      Snackbar.destroy()
-    }
-    // Clear the DOM before each test
+    jest.useFakeTimers()
+    Snackbar.destroy()
+    document.head.innerHTML = ''
     document.body.innerHTML = ''
-    // Reset Snackbar state
-    Snackbar.queue = []
-    Snackbar.isShowing = false
-    Snackbar.currentTimeout = null
-    Snackbar.state = 'idle'
+    warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
   })
 
-  test('should initialize and create snackbar element', () => {
+  afterEach(() => {
+    Snackbar.destroy()
+    warnSpy.mockRestore()
+    errorSpy.mockRestore()
+    jest.runOnlyPendingTimers()
+    jest.useRealTimers()
+  })
+
+  test('initializes the snackbar DOM and styles once', () => {
     Snackbar.init()
-    const snackbar = document.getElementById('mini-snackbar')
+    Snackbar.init()
+
+    const snackbar = getSnackbar()
     expect(snackbar).toBeTruthy()
     expect(snackbar.className).toBe('mini-snackbar')
+    expect(snackbar.getAttribute('role')).toBe('alert')
+    expect(snackbar.getAttribute('aria-live')).toBe('assertive')
+    expect(document.querySelectorAll('#mini-snackbar').length).toBe(1)
+    expect(document.querySelectorAll('#mini-snackbar-styles').length).toBe(1)
+    expect(Snackbar.isInitialized()).toBe(true)
   })
 
-  test('should add message to queue', () => {
-    Snackbar.init()
-    Snackbar.add('Test message')
-    expect(Snackbar.isShowing).toBe(true)
-    expect(Snackbar.queue.length).toBe(0)
+  test('queues messages and shows them in order', () => {
+    Snackbar.init({ transitionDuration: 10 })
+
+    Snackbar.add('First message', null, 100)
+    Snackbar.add('Second message', null, 100)
+
+    expect(getText()).toBe('First message')
+    expect(getSnackbar().classList.contains('show')).toBe(true)
+
+    jest.advanceTimersByTime(100)
+    expect(getSnackbar().classList.contains('show')).toBe(false)
+
+    jest.advanceTimersByTime(210)
+    expect(getText()).toBe('Second message')
+    expect(getSnackbar().classList.contains('show')).toBe(true)
   })
 
-  test('should show snackbar with message', (done) => {
-    Snackbar.init()
-    Snackbar.add('Test message', null, 100)
+  test('show interrupts the current message and clears queued messages', () => {
+    Snackbar.init({ transitionDuration: 10 })
 
-    setTimeout(() => {
-      const snackbar = document.getElementById('mini-snackbar')
-      const textElement = snackbar.querySelector('.mini-snackbar-text')
-      expect(textElement.textContent).toBe('Test message')
-      expect(snackbar.classList.contains('show')).toBe(true)
-      done()
-    }, 10)
+    Snackbar.add('First message', null, 1000)
+    Snackbar.add('Queued message', null, 100)
+    Snackbar.show('Immediate message', null, 100)
+
+    jest.advanceTimersByTime(10)
+    expect(getText()).toBe('Immediate message')
+
+    jest.advanceTimersByTime(310)
+    expect(getText()).toBe('Immediate message')
   })
 
-  test('should handle action button', (done) => {
-    Snackbar.init()
-    const mockHandler = jest.fn()
-    Snackbar.add('Test with action', { text: 'UNDO', handler: mockHandler }, 100)
+  test('show during transition displays the newest message', () => {
+    Snackbar.init({ transitionDuration: 50 })
 
-    setTimeout(() => {
-      const actionButton = document.querySelector('.mini-snackbar-action')
-      expect(actionButton).toBeTruthy()
-      expect(actionButton.innerHTML).toBe('UNDO')
+    Snackbar.show('First message', null, 100)
+    jest.advanceTimersByTime(100)
+    Snackbar.show('Second message', null, 100)
 
-      actionButton.click()
-      expect(mockHandler).toHaveBeenCalled()
-      done()
-    }, 10)
+    expect(getText()).toBe('Second message')
+    expect(getSnackbar().classList.contains('show')).toBe(true)
   })
 
-  test('should queue multiple messages', (done) => {
-    Snackbar.init()
-    Snackbar.add('First message', null, 50)
-    Snackbar.add('Second message', null, 50)
+  test('uses an accessible button fallback for actions', () => {
+    Snackbar.init({ transitionDuration: 10 })
+    const handler = jest.fn()
 
-    expect(Snackbar.queue.length).toBe(1)
-    expect(Snackbar.isShowing).toBe(true)
+    Snackbar.add('Action message', { text: 'UNDO', handler }, 1000)
+    const actionButton = document.querySelector('.mini-snackbar-action')
 
-    setTimeout(() => {
-      const snackbar = document.getElementById('mini-snackbar')
-      const textElement = snackbar.querySelector('.mini-snackbar-text')
-      expect(textElement.textContent).toBe('First message')
+    expect(actionButton.tagName).toBe('BUTTON')
+    expect(actionButton.getAttribute('type')).toBe('button')
+    expect(actionButton.textContent).toBe('UNDO')
 
-      setTimeout(() => {
-        expect(textElement.textContent).toBe('Second message')
-        expect(Snackbar.queue.length).toBe(0)
-        done()
-      }, 500)
-    }, 10)
+    actionButton.click()
+    expect(handler).toHaveBeenCalledTimes(1)
+    expect(getSnackbar().classList.contains('show')).toBe(false)
   })
 
-  test('should provide access to internal state for testing', () => {
+  test('validates input without mutating the DOM', () => {
     Snackbar.init()
-    expect(Snackbar.queue).toEqual([])
-    Snackbar.queue = [{ message: 'test', action: null, duration: 1000 }]
-    expect(Snackbar.queue.length).toBe(1)
+
+    Snackbar.add('')
+    Snackbar.add('Valid message', {})
+    Snackbar.add('Valid message', null, 0)
+
+    expect(warnSpy).toHaveBeenCalledTimes(3)
+    expect(getText()).toBe('')
+  })
+
+  test('warns when used before initialization', () => {
+    Snackbar.add('Missing init')
+
+    expect(warnSpy).toHaveBeenCalledWith('Snackbar: Not initialized. Call Snackbar.init() first.')
+    expect(getSnackbar()).toBeNull()
+  })
+
+  test('hideCurrent hides the active snackbar and continues the queue', () => {
+    Snackbar.init({ transitionDuration: 10 })
+
+    Snackbar.add('First message', null, 1000)
+    Snackbar.add('Second message', null, 100)
+    Snackbar.hideCurrent()
+
+    expect(getSnackbar().classList.contains('show')).toBe(false)
+    jest.advanceTimersByTime(210)
+    expect(getText()).toBe('Second message')
+  })
+
+  test('destroy removes DOM, styles, queue, and pending timers', () => {
+    Snackbar.init({ transitionDuration: 10 })
+    Snackbar.add('First message', null, 100)
+    Snackbar.add('Second message', null, 100)
+
     Snackbar.destroy()
+    jest.advanceTimersByTime(1000)
+
+    expect(Snackbar.isInitialized()).toBe(false)
+    expect(getSnackbar()).toBeNull()
+    expect(document.getElementById('mini-snackbar-styles')).toBeNull()
+
+    Snackbar.init()
+    expect(getText()).toBe('')
   })
 })

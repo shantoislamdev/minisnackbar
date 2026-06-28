@@ -28,16 +28,16 @@ MiniSnackbar is a lightweight, zero-dependency vanilla JavaScript library for di
 
 ## Features
 
-- 🚀 **Zero Dependencies**: Works standalone without external libraries
-- 🎨 **Customizable Styling**: Extensive CSS variable support for theming
-- 📱 **Mobile Responsive**: Optimized for all screen sizes
-- ⚡ **Lightweight**: ~2KB minified bundle size
-- 🔄 **Queue Management**: Handles multiple messages automatically
-- 🎯 **Action Buttons**: Support for interactive buttons with Material Design integration
-- 📦 **Multiple Formats**: UMD, ESM, and CommonJS module support
-- 📘 **TypeScript**: Native TypeScript support with bundled type definitions
-- ♿ **Accessible**: ARIA attributes and keyboard navigation support
-- 🎭 **Material Design**: Optional integration with Material Design web components
+- **Zero Dependencies**: Works standalone without external libraries
+- **Customizable Styling**: Extensive CSS variable support for theming
+- **Mobile Responsive**: Optimized for all screen sizes
+- **Lightweight**: Small browser bundle with no runtime dependencies
+- **Queue Management**: Handles multiple messages automatically
+- **Action Buttons**: Support for interactive buttons with Material Design integration
+- **Multiple Formats**: Browser global, ESM, and CommonJS builds
+- **TypeScript**: Native TypeScript support with bundled type definitions
+- **Accessible**: ARIA attributes and keyboard-accessible fallback buttons
+- **Material Design**: Optional integration with Material Design web components
 
 ## Installation
 
@@ -50,10 +50,10 @@ npm install minisnackbar
 ### CDN
 
 ```html
-<script src="https://unpkg.com/minisnackbar/dist/minisnackbar.min.js"></script>>
+<script src="https://unpkg.com/minisnackbar/dist/minisnackbar.min.js"></script>
 ```
 
-> **Note:** Omitting the version number will always load the latest version. For production stability, consider pinning to a specific version (e.g., `@1.0.2`).
+> **Note:** Omitting the version number will always load the latest version. For production stability, consider pinning to a specific version (e.g., `@2.0.0`).
 
 ### Manual Download
 
@@ -64,7 +64,6 @@ Download the latest release from the [GitHub releases page](https://github.com/s
 ### Basic Setup
 
 ```javascript
-
 import { Snackbar } from 'minisnackbar'
 
 // Initialize (required)
@@ -400,7 +399,7 @@ The library includes built-in error handling and warnings:
 ```javascript
 // These will log warnings but not throw errors
 Snackbar.add('') // Empty message - warning logged
-Snackbar.add('Valid message', { text: '', handler: () => {} }) // Invalid action
+Snackbar.add('Valid message', { text: 'OK' }) // Invalid action - missing handler
 ```
 
 ## Browser Support
@@ -455,7 +454,7 @@ MiniSnackbar follows accessibility best practices:
 
 - Verify the `handler` is a function
 - Check for JavaScript errors in the handler
-- Ensure Material Design components are loaded if using them
+- If Material Web is not loaded, MiniSnackbar uses a standard `<button>` fallback
 
 ### Debug Mode
 
@@ -468,7 +467,7 @@ Enable debug logging:
 
 ## Contributing
 
-We welcome contributions! Please see our [contributing guidelines](CONTRIBUTING.md) for details.
+Issues and pull requests are welcome on the GitHub repository.
 
 ### Development Setup
 

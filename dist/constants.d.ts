@@ -1,0 +1,10 @@
+export declare const SNACKBAR_ID = "mini-snackbar";
+export declare const STYLES_ID = "mini-snackbar-styles";
+export declare const SNACKBAR_CLASS = "mini-snackbar";
+export declare const SNACKBAR_VISIBLE_CLASS = "show";
+export declare const SNACKBAR_TEXT_CLASS = "mini-snackbar-text";
+export declare const SNACKBAR_ACTION_CLASS = "mini-snackbar-action";
+export declare const DEFAULT_DURATION = 3000;
+export declare const DEFAULT_TRANSITION_DURATION = 250;
+export declare const QUEUE_GAP_DURATION = 200;
+//# sourceMappingURL=constants.d.ts.map
